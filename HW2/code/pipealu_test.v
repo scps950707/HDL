@@ -2,6 +2,7 @@ module pipealu_test;
 	//input
 	reg [15:0] instr;
 	reg clk;
+	reg rst;
 	//output
 	wire [31:0] AluOut;
 	wire Zero;
@@ -11,73 +12,39 @@ module pipealu_test;
 	pipealu test
 	(
 		.instr(instr),
+		.clk(clk),
+		.rst(rst),
 		.AluOut(AluOut),
 		.Zero(Zero),
-		.clk(clk),
 		.Carryout(Carryout),
 		.Overflow(Overflow)
 	);
 	
-	initial begin
-		instr = 16'b0010000000011111;//add r15 = r0+r1  (test add overflow)
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b0110000000011111;//sub r15 = r0-r1
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b0000000000011111;//and r15 = r0&r1
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b0001000000011111;//or r15 = r0|r1
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b0111000000011111;//slt r15 = r0 slt r1
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b1100000000011111;//nor r15 = r0 nor r1
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b0010010101101111;//add r15 = r5+r6 (test add overflow)
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b0110011110001111;//sub r15 = r7-r8 (test sub overflow)
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		instr = 16'b0010110011011111;//add r15 = r0+r1
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		clk = 0;
-		#4;
-		clk = 1;
-		#4;
-		$finish;
-	end
-
+initial begin
+clk = 1'b0;
+forever #10 clk = ~clk ;
+end
+	
+initial begin
+	rst = 1;
+	#10;
+	rst = 0;
+	#10;
+	rst = 1;
+	#10;
+	instr = 16'h0012;//R2 = R0 & R1
+	#20
+	instr = 16'h1345;//R5 = R4 | R3
+	#20
+	instr = 16'h2678;//R8 = R7 + R6
+	#20
+	instr = 16'h69ab;//R11 = R10 -R9
+	#20
+	instr = 16'h7cde;//R14 = a(R12)<b(R13) ? 1 : 0
+	#20
+	instr = 16'hccef;//R15 = R12 nor R14
+	#60
+	$stop;
+end		
 
 endmodule
