@@ -94,7 +94,6 @@ module pipealu(instr,AluOut, Zero,clk,Carryout,Overflow,rst);
 			end
 			default:
 			begin
-				AluOut = 0;
 				Carryout = 0;
 				Overflow = 0;
 			end
