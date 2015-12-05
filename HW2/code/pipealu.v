@@ -6,11 +6,14 @@ module pipealu(instr,AluOut, Zero,clk,Carryout,Overflow,rst);
 	output Zero;
 	output reg Carryout;
 	output reg Overflow;
-	reg [31:0] pipeA;
-	reg [31:0] pipeB;
-	reg [3:0] ALU_ctl;
-	reg [3:0] dest;
-	reg [3:0] pipedest;
+	reg [31:0] IFID_A;
+	reg [31:0] IFID_B;
+	reg [3:0] IFID_ALU_ctl;
+	reg [3:0] IFID_dest;
+	reg [31:0] EX_A;
+	reg [31:0] EX_B;
+	reg [3:0] EX_ALU_ctl;
+	reg [3:0] EX_dest;
 	reg [31:0] regfile[15:0];
 	
 	always@(posedge clk or negedge rst)//first stage
@@ -36,11 +39,11 @@ module pipealu(instr,AluOut, Zero,clk,Carryout,Overflow,rst);
 		end
 	else
 		begin
-			regfile[pipedest] <= AluOut;
-			ALU_ctl <= instr[15:12];
-			pipeA <= regfile[instr[11:8]];
-			pipeB <= regfile[instr[7:4]];
-			dest <= instr[3:0];
+			regfile[EX_dest] <= AluOut;
+			IFID_ALU_ctl <= instr[15:12];
+			IFID_A <= regfile[instr[11:8]];
+			IFID_B <= regfile[instr[7:4]];
+			IFID_dest <= instr[3:0];
 		end
 	end
 	
@@ -48,41 +51,44 @@ module pipealu(instr,AluOut, Zero,clk,Carryout,Overflow,rst);
 	
 	always@(posedge clk)
 	begin
-		pipedest <= dest;
-		case(ALU_ctl)
+		EX_ALU_ctl = IFID_ALU_ctl;
+		EX_A = IFID_A;
+		EX_B = IFID_B;
+		EX_dest = IFID_dest;
+		case(IFID_ALU_ctl)
 			0: 
 			begin
-				AluOut = pipeA & pipeB;
+				AluOut = EX_A & EX_B;
 				Carryout = 0;
 				Overflow = 0;
 			end 
 			1: 
 			begin
-				AluOut = pipeA | pipeB;
+				AluOut = EX_A | EX_B;
 				Carryout = 0;
 				Overflow = 0;
 			end
 			2: 
 			begin
-				{Carryout,AluOut} = pipeA + pipeB;
+				{Carryout,AluOut} = EX_A + EX_B;
 				Overflow = Carryout ^ AluOut[31];
 			end
 			6: 
 			begin
-				{Carryout,AluOut} = pipeA - pipeB;
-				Overflow=((pipeA[31]&!pipeB[31])&!AluOut[31])
-						|((!pipeA[31]&pipeB[31])&AluOut[31])
+				{Carryout,AluOut} = EX_A - EX_B;
+				Overflow=((EX_A[31]&!EX_B[31])&!AluOut[31])
+						|((!EX_A[31]&EX_B[31])&AluOut[31])
 						|Carryout&AluOut[31];
 			end
 			7:
 			begin
-				AluOut = pipeA < pipeB ? 1 : 0;
+				AluOut = EX_A < EX_B ? 1 : 0;
 				Carryout = 0;
 				Overflow = 0;
 			end
 			12:
 			begin
-				AluOut = ~(pipeA | pipeB);
+				AluOut = ~(EX_A | EX_B);
 				Carryout = 0;
 				Overflow = 0;
 			end
