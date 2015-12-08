@@ -6,15 +6,22 @@ module pipealu(instr,AluOut, Zero,clk,Carryout,Overflow,rst);
 	output Zero;
 	output reg Carryout;
 	output reg Overflow;
-	reg [31:0] IFID_A;
-	reg [31:0] IFID_B;
-	reg [3:0] IFID_ALU_ctl;
-	reg [3:0] IFID_dest;
+	wire [31:0] IFID_A;
+	wire [31:0] IFID_B;
+	wire [3:0] IFID_ALU_ctl;
+	wire [3:0] IFID_dest;
 	reg [31:0] EX_A;
 	reg [31:0] EX_B;
 	reg [3:0] EX_ALU_ctl;
 	reg [3:0] EX_dest;
 	reg [31:0] regfile[15:0];
+	
+	assign IFID_ALU_ctl = instr[15:12];
+	assign IFID_A = regfile[instr[11:8]];
+	assign IFID_B = regfile[instr[7:4]];
+	assign IFID_dest = instr[3:0];
+	assign Zero = (AluOut==0);
+	
 	
 	always@(posedge clk or negedge rst)//first stage
 	begin
@@ -40,15 +47,9 @@ module pipealu(instr,AluOut, Zero,clk,Carryout,Overflow,rst);
 	else
 		begin
 			regfile[EX_dest] <= AluOut;
-			IFID_ALU_ctl <= instr[15:12];
-			IFID_A <= regfile[instr[11:8]];
-			IFID_B <= regfile[instr[7:4]];
-			IFID_dest <= instr[3:0];
 		end
 	end
-	
-	assign Zero = (AluOut==0);
-	
+
 	always@(posedge clk)
 	begin
 		EX_ALU_ctl = IFID_ALU_ctl;

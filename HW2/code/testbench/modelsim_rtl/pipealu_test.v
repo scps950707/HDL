@@ -29,12 +29,6 @@ initial begin
 	rst = 0;
 	#10;
 	rst = 1;
-	#10;
-	instr = 16'hf000;//no oper(reset)
-	#10;
-	rst = 0;
-	#30;
-	rst = 1;
 	instr = 16'h0562;//R2 = R5 & R6
 	#80;
 	instr = 16'h1345;//R5 = R4 | R3
@@ -46,6 +40,8 @@ initial begin
 	instr = 16'h7cde;//R14 = a(R12)<b(R13) ? 1 : 0
 	#40;
 	instr = 16'hccef;//R15 = R12 nor R14
+	#40;
+	instr = 16'h654d;//R13 = R4 - R5 = 0
 	#120;
 	$stop;
 end		
