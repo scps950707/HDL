@@ -1,0 +1,28 @@
+****************************************
+Report : area
+Design : pipealu
+Version: H-2013.03-SP5
+Date   : Tue Dec  8 20:52:34 2015
+****************************************
+
+Library(s) Used:
+
+    saed90nm_typ (File: /CBDK/SAED90_EDK/SAED_EDK90nm/Digital_Standard_cell_Library/synopsys/models/saed90nm_typ.db)
+
+Number of ports:                           53
+Number of nets:                          1761
+Number of cells:                         1676
+Number of combinational cells:           1125
+Number of sequential cells:               550
+Number of macros/black boxes:               0
+Number of buf/inv:                         46
+Number of references:                      23
+
+Combinational area:              17103.974851
+Buf/Inv area:                      255.283206
+Noncombinational area:           17430.221043
+Macro/Black Box area:                0.000000
+Net Interconnect area:            3889.269826
+
+Total cell area:                 34534.195894
+Total area:                      38423.465720
