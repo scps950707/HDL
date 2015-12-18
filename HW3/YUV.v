@@ -225,7 +225,7 @@ module tb_thumb();
 	
 	
 	/*
-	file_index = $fread(bmp_data, file_in);//bmp_size=1000000
+	file_index = $fread(bmp_data, file_in);//bmp_size=1000000,need to be change bmp_data above
 	for(i = 0; i < bmp_size - data_start_index; i = i + 3)
 	begin
 		//$display("%d:%h",i,bmp_data[i]);
