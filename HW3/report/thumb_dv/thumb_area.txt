@@ -1,0 +1,28 @@
+****************************************
+Report : area
+Design : thumb
+Version: H-2013.03-SP5
+Date   : Sat Dec 19 02:01:00 2015
+****************************************
+
+Library(s) Used:
+
+    saed90nm_typ (File: /CBDK/SAED90_EDK/SAED_EDK90nm/Digital_Standard_cell_Library/synopsys/models/saed90nm_typ.db)
+
+Number of ports:                          117
+Number of nets:                          6154
+Number of cells:                         5398
+Number of combinational cells:           4612
+Number of sequential cells:               768
+Number of macros/black boxes:               0
+Number of buf/inv:                        375
+Number of references:                      62
+
+Combinational area:              93778.330076
+Buf/Inv area:                     3119.616081
+Noncombinational area:           20509.286325
+Macro/Black Box area:                0.000000
+Net Interconnect area:          556216.691343
+
+Total cell area:                114287.616402
+Total area:                     670504.307744
