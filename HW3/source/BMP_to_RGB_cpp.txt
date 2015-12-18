@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int bmp_read1(unsigned int *xsize, unsigned int *ysize, const char *filename) {
+    FILE *fp;
+	unsigned int rgb_raw_data_offset; // RGB raw data offset
+	int width;
+	int height;
+    
+	fp = fopen(filename, "rb");
+	if (fp == NULL) {
+		printf("fopen fp_sl error\n");
+		return -1;
+	}
+	
+	// move offset to 10 to find rgb raw data offset
+	fseek(fp, 10, SEEK_SET);
+	fread(&rgb_raw_data_offset, sizeof(unsigned int), 1, fp);
+	// move offset to 18    to get width & height;
+	fseek(fp, 18, SEEK_SET); 
+	fread(xsize,  sizeof(unsigned int), 1, fp);
+	fread(ysize, sizeof(unsigned int), 1, fp);
+	// move offset to rgb_raw_data_offset to get RGB raw data
+	fseek(fp, rgb_raw_data_offset, SEEK_SET);
+	width=*xsize;;
+	height=*ysize;
+	fclose(fp);
+
+    return 0;
+}
+int bmp_read2(unsigned char *image, int xsize, int ysize, const char *filename) {
+    FILE *fp;
+    unsigned char header[54];
+   
+    if (!(fp = fopen(filename, "rb")))
+      return -1;
+   
+    fread(header, sizeof(unsigned char), 54, fp);
+    fread(image, sizeof(unsigned char), (size_t)(long)xsize * ysize * 3, fp);
+   
+    fclose(fp);
+    return 0;
+}
+ 
+int read_image(const char *fname) {
+	unsigned int  x,y;                // for loop counter
+	int R, G, B;            // color of R, G, B    
+	unsigned int  width, height;  // image width, image height
+	unsigned char *image = NULL;   // source image array
+					
+	bmp_read1(&width, &height, fname);
+
+	image = (unsigned char *)malloc((size_t)width * height * 3);
+
+	bmp_read2(image, width, height, fname);
+
+	FILE* fp0 = fopen("r.txt","w");
+	FILE* fp1 = fopen("g.txt","w");
+  	FILE* fp2 = fopen("b.txt","w");
+  	
+	for(y = 0; y != height; ++y) {
+		for(x = 0; x != width; ++x) {
+			R = (int)*(image + 3 * (width * y + x) + 2);
+			G = (int)*(image + 3 * (width * y + x) + 1);
+			B = (int)*(image + 3 * (width * y + x) + 0);
+			
+			fprintf(fp0,"%d ",R);
+      		fprintf(fp1,"%d ",G);
+      		fprintf(fp2,"%d ",B);
+		}
+	}
+	fclose(fp0);
+  	fclose(fp1);
+  	fclose(fp2);
+	
+    return 0;
+}
+
+int main() {
+	
+	read_image("lena.bmp");
+	
+	system("pause");
+	return 0;
+}

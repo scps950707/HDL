@@ -1,0 +1,32 @@
+close all;% ?œé??€?‰è?çª?
+clear all;% æ¸…é™¤?€?‰è???
+clc;% æ¸…é™¤?½ä»¤è¦–ç??«é¢
+
+% read a photo and show my photo
+I=imread('lena.bmp');%è®€?–å???
+
+ 
+%å»ºç?RGB?©é™£
+R = I(:,:,1); 
+G = I(:,:,2); 
+B = I(:,:,3); 
+
+r=R;
+g=G;
+b=B;
+
+fid0=fopen('r.txt','w');
+fid1=fopen('g.txt','w');
+fid2=fopen('b.txt','w');
+
+for i=1:512
+    for j=1:512
+        fprintf(fid0,'%d\n',r(i,j));
+		fprintf(fid1,'%d\n',g(i,j));
+		fprintf(fid2,'%d\n',b(i,j));
+	
+    end
+end
+fclose(fid0);
+fclose(fid1);
+fclose(fid2);
