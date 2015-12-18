@@ -116,6 +116,7 @@ module tb_thumb();
 	data_memory[12]=32'd11;
 	data_memory[16]=32'd8;
 	data_memory[20]=32'd17;*/
+	//test data:the output above should be 4
 	instruction_memory[0] = 16'h2700; // MOV r7, #0
 	instruction_memory[2] = 16'h2100; // MOV r1, #0 used to wait r7
 	instruction_memory[4] = 16'h2200; // MOV r2, #0	used to wait r7
@@ -137,7 +138,7 @@ module tb_thumb();
 	instruction_memory[36]= 16'h2600; // MOV r6, #0	//wait r0
 	instruction_memory[38]= 16'h2600; // MOV r6, #0 //wait r0
 	instruction_memory[40]= 16'h61b8; // STR r0,[r7,#6*4]
-	instruction_memory[42]= 16'h2600; // MOV r6, #0 //wait r0
+	instruction_memory[42]= 16'h2600; // MOV r6, #0 force write back
 	//instruction_memory[42]= 16'hdf00; // SWI(to halt the program)
 	
 	fileId = $fopen("YUV.bmp","rb");
@@ -167,31 +168,27 @@ module tb_thumb();
 					data_memory[12]= bmp_data[3*(bmp_width*y+(x+1))];
 					data_memory[16]= bmp_data[3*(bmp_width*(y+1)+(x-1))];
 					data_memory[20]= bmp_data[3*(bmp_width*(y+1)+(x+1))];
-					reset_n = 1;       // generate a LOW pulse for reset_n
-					#(`PERIOD1/4) reset_n = 0;
+					reset_n = 0;
 					#(`PERIOD1 * 2) reset_n = 1;
 					#3000;
-					
 					if(data_memory[24]<0)
 						begin
 							data_memory[24]=0-data_memory[24];
 						end
 					//$display("X:%d Y:%d B:%d\n",x,y,data_memory[24]);
-					
-					
 					if(data_memory[24]>64)
 						begin
-							$fwrite(fileOUT,"%c%c%c",255,255,255);
+							$fwrite(fileOUT,"%c%c%c",255,255,255);//white
 						end
 					else
 						begin
-							$fwrite(fileOUT,"%c%c%c",0,0,0);
+							$fwrite(fileOUT,"%c%c%c",0,0,0);//black
 						end
 					//$fwrite(fileOUT,"%c%c%c",data_memory[24],data_memory[24],data_memory[24]);
 				end
 			else
 				begin
-					$fwrite(fileOUT,"%c%c%c",bmp_data[i],bmp_data[i],bmp_data[i]);
+					$fwrite(fileOUT,"%c%c%c",0,0,0);//black
 				end
 		end
 	end
