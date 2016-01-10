@@ -30,6 +30,8 @@ architecture tb_thumb of tb_thumb is
   constant WRITE_DELAY: time := 80 ns; -- memory write delay
   constant STABLE_TIME: time := 10 ns; -- data stable after read
   constant MEMORY_SIZE: integer := 256;
+  constant bmp_width:integer :=512;
+  constant bmp_height:integer :=512;
            -- size of memory is 2^8 words (reduced size)
            -- - use only 8 lowest bits of address word
 
@@ -145,12 +147,14 @@ begin  -- of body of architecture tb_thumb
 	variable byte:character;
 	variable output:character;
 	type char_file is file of character;
-	FILE file_in: char_file is "Lena_bmp.bmp";
-	file file_out : char_file open WRITE_MODE is "YUV.bmp";
-	type unsigned_arr is array (0 to 299999) of unsigned(7 downto 0);
+	FILE file_in: char_file is "YUV.bmp";
+	file file_out : char_file open WRITE_MODE is "edge.bmp";
+	type unsigned_arr is array (0 to (bmp_width*bmp_height*3) -1) of unsigned(7 downto 0);
 	variable b_arr:unsigned_arr;
 	variable g_arr:unsigned_arr;
 	variable r_arr:unsigned_arr;
+	variable bmp_data:unsigned_arr;
+	variable sobel_x:integer;
   begin
 	
 	for i in 0 to 53 loop
@@ -158,97 +162,60 @@ begin  -- of body of architecture tb_thumb
 		write(file_out,byte);
 	end loop;
 	
-	for i in 0 to 262143 loop
-		read(file_in, byte);
-		b_arr(i):=to_unsigned(character'pos(byte),8);
-		read(file_in, byte);
-		g_arr(i):=to_unsigned(character'pos(byte),8);
-		read(file_in, byte);
-		r_arr(i):=to_unsigned(character'pos(byte),8);
+	for i in 0 to (bmp_width*bmp_height*3) -1 loop
+		read(file_in,byte);
+		bmp_data(i):=to_unsigned(character'pos(byte),8);
 	end loop;
-	
-	for i in 0 to 262143 loop
-	--R*0.299
-	instruction_memory(0) <= X"2700"; -- MOV r7, #0
-	instruction_memory(2) <= X"2100"; -- MOV r1, #0 used to wait r7
-	instruction_memory(4) <= X"2100"; -- MOV r1, #0	used to wait r7
-	instruction_memory(6) <= X"20"&r_arr(i); -- MOV r0, r
-	instruction_memory(8) <= X"2100"; -- MOV r1, #0 used to wait r0
-	instruction_memory(10)<= X"2100"; -- MOV r1, #0 used to wait r0
-	instruction_memory(12)<= X"1083"; -- r3 <= r0 >> 2
-	instruction_memory(14)<= X"1144"; -- r4 <= r0 >> 5
-	instruction_memory(16)<= X"1185"; -- r5 <= r0 >> 6
-	instruction_memory(18)<= X"1206"; -- r6 <= r0 >> 8
-	instruction_memory(20)<= X"18e3"; -- ADD r3,r3,r4
-	instruction_memory(22)<= X"2100"; -- MOV r1, #0 used to wait r6
-	instruction_memory(24)<= X"1975"; -- ADD r5,r5,r6
-	instruction_memory(26)<= X"2100"; -- MOV r1, #0 used to wait r5
-	instruction_memory(28)<= X"2100"; -- MOV r1, #0 used to wait r5
-	instruction_memory(30)<= X"18eb"; -- ADD r3,r3,r5
-	instruction_memory(32)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(34)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(36)<= X"60fb"; -- STR r3,(r7,#3*4)
-	--G*0.589
-	instruction_memory(38)<= X"2100"; -- MOV r1, #0 used to avoid structural Hazards
-	instruction_memory(40)<= X"20"&g_arr(i); -- MOV r0, g
-	instruction_memory(42)<= X"2100"; -- MOV r1, #0 used to wait r0
-	instruction_memory(44)<= X"2100"; -- MOV r1, #0 used to wait r0
-	instruction_memory(46)<= X"1043"; -- r3 <= r0 >> 1
-	instruction_memory(48)<= X"1104"; -- r4 <= r0 >> 4
-	instruction_memory(50)<= X"1185"; -- r5 <= r0 >> 6
-	instruction_memory(52)<= X"11c6"; -- r6 <= r0 >> 7
-	instruction_memory(54)<= X"18e3"; -- ADD r3,r3,r4
-	instruction_memory(56)<= X"2100"; -- MOV r1, #0 used to wait r6
-	instruction_memory(58)<= X"1975"; -- ADD r5,r5,r6
-	instruction_memory(60)<= X"2100"; -- MOV r1, #0 used to wait r5
-	instruction_memory(62)<= X"2100"; -- MOV r1, #0 used to wait r5
-	instruction_memory(64)<= X"18eb"; -- ADD r3,r3,r5
-	instruction_memory(66)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(68)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(70)<= X"613b"; -- STR r3,(r7,#4*4)
-	--B*0.114
-	instruction_memory(72)<= X"2100"; -- MOV r1, #0 used to avoid structural Hazards
-	instruction_memory(74)<= X"20"&b_arr(i); -- MOV r0, b
-	instruction_memory(76)<= X"2100"; -- MOV r1, #0 used to wait r0
-	instruction_memory(78)<= X"2100"; -- MOV r1, #0 used to wait r0
-	instruction_memory(80)<= X"1103"; -- r3 <= r0 >> 4
-	instruction_memory(82)<= X"1144"; -- r4 <= r0 >> 5
-	instruction_memory(84)<= X"1185"; -- r5 <= r0 >> 6
-	instruction_memory(86)<= X"11c6"; -- r6 <= r0 >> 7
-	instruction_memory(88)<= X"18e3"; -- ADD r3,r3,r4
-	instruction_memory(90)<= X"2100"; -- MOV r1, #0 used to wait r6
-	instruction_memory(92)<= X"1975"; -- ADD r5,r5,r6
-	instruction_memory(94)<= X"2100"; -- MOV r1, #0 used to wait r5
-	instruction_memory(96)<= X"2100"; -- MOV r1, #0 used to wait r5
-	instruction_memory(98)<= X"18eb"; -- ADD r3,r3,r5
-	instruction_memory(100)<= X"2100"; -- MOV r1, #0 used for wait r3
-	instruction_memory(102)<= X"2100"; -- MOV r1, #0 used for wait r3
-	instruction_memory(104)<= X"617b"; -- STR r3,(r7,#5*4)
-	--Y<=R+G+B
-	instruction_memory(106)<= X"2100"; -- MOV r1, #0 used to avoid structural Hazards
-	instruction_memory(108)<= X"68fb"; -- LDR r3, (r7,#3*4)
-	instruction_memory(110)<= X"693c"; -- LDR r4, (r7,#4*4)
-	instruction_memory(112)<= X"697d"; -- LDR r5, (r7,#5*4)
-	instruction_memory(114)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(116)<= X"18e3"; -- ADD r3,r3,r4
-	instruction_memory(118)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(120)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(122)<= X"18eb"; -- ADD r3,r3,r5
-	instruction_memory(124)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(126)<= X"2100"; -- MOV r1, #0 used to wait r3
-	instruction_memory(128)<= X"61bb"; -- STR r3, (r7,#6*4)
-	instruction_memory(130)<= X"2100"; -- MOV r1, #0 force write back
-	instruction_memory(132)<= X"e7bc"; -- jump to 0
-	instruction_memory(134)<= X"2100"; -- MOV r1, #0 force write back
-	instruction_memory(136)<= X"2100"; -- MOV r1, #0 force write back
-	wait for 7050 ns; -- need to be 7000~7200
-	output:=character'val(TO_INTEGER(data_memory(24)));
-	write(file_out,output);
-	write(file_out,output);
-	write(file_out,output);
-	wait for 50 ns;
+		for y in 0 to bmp_height-1 loop
+			for x in 0 to bmp_width-1 loop
+			if ( ( x>0 AND x < (bmp_width-1) ) AND ( y>0 AND y < (bmp_height-1) ) ) then
+			instruction_memory(0) <= X"2700"; -- MOV r7, #0
+			instruction_memory(2) <= X"2100"; -- MOV r1, #0 used to wait r7
+			instruction_memory(4) <= X"2200"; -- MOV r2, #0	used to wait r7
+			instruction_memory(6) <= X"20"&bmp_data(3*(bmp_width*(y-1)+(x-1))); -- LDR r0, leftup 
+			instruction_memory(8) <= X"21"&bmp_data(3*(bmp_width*(y-1)+(x+1))); -- LDR r1, rightup 
+			instruction_memory(10)<= X"22"&bmp_data(3*(bmp_width*y+(x-1))); -- LDR r2, left 
+			instruction_memory(12)<= X"23"&bmp_data(3*(bmp_width*y+(x+1))); -- LDR r3, right 
+			instruction_memory(14)<= X"24"&bmp_data(3*(bmp_width*(y+1)+(x-1))); -- LDR r4, leftdown 
+			instruction_memory(16)<= X"25"&bmp_data(3*(bmp_width*(y+1)+(x+1))); -- LDR r5, rightdown
+			instruction_memory(18)<= X"1a9a"; -- SUB r2,r3,r2;
+			instruction_memory(20)<= X"1a08"; -- SUB r0,r1,r0;
+			instruction_memory(22)<= X"1b2c"; -- SUB r4,r5,r4;
+			instruction_memory(24)<= X"0052"; -- LSL r2,#2
+			instruction_memory(26)<= X"2600"; -- MOV r6, #0
+			instruction_memory(28)<= X"1820"; -- ADD r0,r0,r4
+			instruction_memory(30)<= X"2600"; -- MOV r6, #0	--wait r0
+			instruction_memory(32)<= X"2600"; -- MOV r6, #0 --wait r0
+			instruction_memory(34)<= X"1810"; -- ADD r0,r0,r2
+			instruction_memory(36)<= X"2600"; -- MOV r6, #0	--wait r0
+			instruction_memory(38)<= X"2600"; -- MOV r6, #0 --wait r0
+			instruction_memory(40)<= X"61b8"; -- STR r0,(r7,#6*4)
+			instruction_memory(42)<= X"2600"; -- MOV r6, #0 force write back
+			instruction_memory(44)<= X"e7e8"; -- B #0
+			instruction_memory(46)<= X"2100"; -- MOV r1, #0 force write back
+			instruction_memory(48)<= X"2100"; -- MOV r1, #0 force write back
+			wait for 2700 ns;
+			sobel_x:=TO_INTEGER(data_memory(24));
+			if(sobel_x<0) then
+				sobel_x:=0-sobel_x;
+			end if;
+			if(sobel_x>64) then
+				write(file_out,character'val(255));
+				write(file_out,character'val(255));
+				write(file_out,character'val(255));
+			else
+				write(file_out,character'val(0));
+				write(file_out,character'val(0));
+				write(file_out,character'val(0));
+			end if;
+		else
+			write(file_out,character'val(0));
+			write(file_out,character'val(0));
+			write(file_out,character'val(0));
+		end if;
+		end loop;
 	end loop;
-	wait for 7200 ns;
+	wait for 6000 ns;
 	file_close(file_in);
 	file_close(file_out);
     report "Simulation completed at time " & time'image(now);
