@@ -158,7 +158,7 @@ module tb_thumb();
 	begin
 		for(x = 0;x != bmp_width;x = x+1)
 		begin
-			if ( ( x >= 1 && x <= bmp_width - 1 ) && ( y >= 1 && y <= bmp_height - 1) )
+			if ( ( x > 0 && x < bmp_width - 1 ) && ( y > 0 && y < bmp_height - 1) )
 				begin
 					//$display("X:%d Y:%d B:%x\n",x,y,bmp_data[3*(bmp_width*y+x)]);
 					//r0:leftup r1:rightup r2:left r3:right r4:leftdown r5:rightdown
